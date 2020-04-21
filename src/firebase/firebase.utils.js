@@ -10,7 +10,7 @@ const config = {
   storageBucket: 'crown-db-de369.appspot.com',
   messagingSenderId: '520483422103',
   appId: '1:520483422103:web:c3df71c545017512150ed2',
-  measurementId: 'G-2YDBJ8DQR8'
+  measurementId: 'G-2YDBJ8DQR8',
 };
 
 export const createUserProfileDocument = async (userAuth, additionalData) => {
@@ -29,7 +29,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
         displayName,
         email,
         createdAt,
-        ...additionalData
+        ...additionalData,
       });
     } catch (err) {
       console.error('error creating user:', err.message);
@@ -40,8 +40,37 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
 
 firebase.initializeApp(config);
 
+export const convertCollectionsSnapshotToMap = (collections) => {
+  const transformedCollection = collections.docs.map((doc) => {
+    const { title, items } = doc.data();
+
+    return {
+      routeName: encodeURI(title.toLowerCase()),
+      id: doc.id,
+      title,
+      items,
+    };
+  });
+  return transformedCollection.reduce((accumulator, collection) => {
+    accumulator[collection.title.toLowerCase()] = collection;
+    return accumulator;
+  }, {});
+};
+
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
+
+// add data to cloud firestore
+export const addCollectionsAndDocuments = async (key, objects) => {
+  const collectionRef = firestore.collection(key);
+  const batch = firestore.batch();
+  objects.forEach((obj) => {
+    const newDocRef = collectionRef.doc();
+    batch.set(newDocRef, obj);
+  });
+
+  return await batch.commit();
+};
 
 const provider = new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
