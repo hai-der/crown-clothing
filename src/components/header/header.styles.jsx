@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 export const OptionContainerStyles = css`
   padding: 10px 15px;
   cursor: pointer;
+  :hover {
+    border-bottom: 2px solid grey;
+  }
 `;
 
 export const HeaderContainer = styled.div`
